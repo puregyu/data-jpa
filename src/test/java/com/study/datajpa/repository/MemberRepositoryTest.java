@@ -1,6 +1,8 @@
 package com.study.datajpa.repository;
 
+import com.study.datajpa.dto.MemberDto;
 import com.study.datajpa.entity.Member;
+import com.study.datajpa.entity.Team;
 import com.sun.el.parser.AstFalse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +20,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional // jpa의 모든 데이터변경은 트랙잭션안에서 이루어져야 한다. 기본적으로 Test에서는 Rollback 처리된다.
 @Rollback(false)
 class MemberRepositoryTest {
+
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    TeamRepository teamRepository;
 
     @Test
     void save() {
@@ -56,5 +61,31 @@ class MemberRepositoryTest {
         assertThat(result.get(0).getUsername()).isEqualTo("AAA");
         assertThat(result.get(0).getAge()).isEqualTo(20);
         assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void findUsernameList() {
+        Member m1 = new Member("devyu", 10);
+        Member m2 = new Member("puregyu", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<String> usernameList = memberRepository.findUsernameList();
+        assertThat(usernameList.size()).isEqualTo(2);
+
+    }
+
+    @Test
+    public void findMemberDto() {
+
+        Team t = new Team("개발부");
+        Member m1 = new Member("devyu", 10);
+        m1.setTeam(t);
+
+        memberRepository.save(m1);
+        teamRepository.save(t);
+
+        List<MemberDto> memberDto = memberRepository.findMemberDto();
+
     }
 }

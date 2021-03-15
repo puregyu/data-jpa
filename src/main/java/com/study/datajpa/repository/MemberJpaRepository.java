@@ -50,4 +50,11 @@ public class MemberJpaRepository {
                 .getResultList();
     }
 
+    // NamedQuery 방식
+    public List<Member> findByUsername(String username) {
+        return  entityManager.createNamedQuery("Member.findByUsername", Member.class)
+                    .setParameter("username", username)
+                    .getResultList();
+    }
+
 }
