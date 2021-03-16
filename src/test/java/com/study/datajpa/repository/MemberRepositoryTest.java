@@ -88,4 +88,24 @@ class MemberRepositoryTest {
         List<MemberDto> memberDto = memberRepository.findMemberDto();
 
     }
+
+    @Test
+    public void returnType() {
+        Member m1 = new Member("devyu", 10);
+        Member m2 = new Member("puregyu", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        // 반환타입이 List인데 조회결과가 없는경우, null이 아닌 empty collection이 반환됨
+        List<Member> listByUsername = memberRepository.findListByUsername("ttttt");
+        System.out.println(listByUsername.isEmpty()); // true
+        System.out.println(listByUsername == null); // false
+
+        // 반환타입이 단건인데 조회결과가 없는경우, null
+        Member memberByUsername = memberRepository.findMemberByUsername("ttttt");
+        System.out.println(memberByUsername == null); // true
+
+        Optional<Member> optionalByUsername = memberRepository.findOptionalByUsername("devyu");
+
+    }
 }

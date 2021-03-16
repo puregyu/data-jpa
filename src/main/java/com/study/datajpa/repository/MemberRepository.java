@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
     // 스프링 데이터 JPA는 메소드 이름을 분석해서 JPQL을 생성하고 실행
@@ -32,4 +33,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("select m from Member m where m.username in :names")
     List<Member> findByNames(@Param("names") List<String> names);
 
+    // 컬렉션 반환타입
+    List<Member> findListByUsername(String username);
+    // 단건 반환타입
+    Member findMemberByUsername(String username);
+    // 단건(optional) 반환타입
+    Optional<Member> findOptionalByUsername(String username);
 }
