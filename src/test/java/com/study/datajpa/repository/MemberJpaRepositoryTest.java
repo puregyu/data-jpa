@@ -2,6 +2,7 @@ package com.study.datajpa.repository;
 
 import com.study.datajpa.entity.Member;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -79,5 +80,33 @@ class MemberJpaRepositoryTest {
         assertThat(result.get(0).getUsername()).isEqualTo("AAA");
         assertThat(result.get(0).getAge()).isEqualTo(20);
         assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("순수 JPA를 통한 페이징 처리 테스트")
+    public void paging() {
+
+        memberJpaRepository.save(new Member("강만주", 20));
+        memberJpaRepository.save(new Member("나현수", 20));
+        memberJpaRepository.save(new Member("도경만", 10));
+        memberJpaRepository.save(new Member("라형주", 20));
+        memberJpaRepository.save(new Member("마재석", 10));
+        memberJpaRepository.save(new Member("박한솔", 20));
+        memberJpaRepository.save(new Member("사현재", 20));
+        memberJpaRepository.save(new Member("차인권", 10));
+        memberJpaRepository.save(new Member("탁준희", 20));
+        memberJpaRepository.save(new Member("홍현", 20));
+
+        int age = 20;
+        int offset = 0;
+        int limit = 5;
+
+        List<Member> members = memberJpaRepository.findByPage(age, offset, limit);
+        long totalCount = memberJpaRepository.totalCount(age);
+
+        assertThat(members.size()).isEqualTo(5);
+        assertThat(totalCount).isEqualTo(7);
+
+        members.stream().map(Member::getUsername).forEach(System.out::println);
     }
 }

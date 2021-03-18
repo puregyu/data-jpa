@@ -4,9 +4,14 @@ import com.study.datajpa.dto.MemberDto;
 import com.study.datajpa.entity.Member;
 import com.study.datajpa.entity.Team;
 import com.sun.el.parser.AstFalse;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -107,5 +112,82 @@ class MemberRepositoryTest {
 
         Optional<Member> optionalByUsername = memberRepository.findOptionalByUsername("devyu");
 
+    }
+
+    @Test
+    void test() {
+        Member m1 = new Member("devyu", 10);
+        Member m2 = new Member("puregyu", 20);
+
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+//        Member byMemberDto = memberRepository.findByMemberDto();
+//        System.out.println(byMemberDto);
+    }
+
+    @Test
+    @DisplayName("스프링 데이터 JPA를 통한 페이징 처리 테스트(Page)")
+    public void paging_Page() {
+
+        memberRepository.save(new Member("강만주", 20));
+        memberRepository.save(new Member("나현수", 20));
+        memberRepository.save(new Member("도경만", 10));
+        memberRepository.save(new Member("라형주", 20));
+        memberRepository.save(new Member("마재석", 10));
+        memberRepository.save(new Member("박한솔", 20));
+        memberRepository.save(new Member("사현재", 20));
+        memberRepository.save(new Member("차인권", 10));
+        memberRepository.save(new Member("탁준희", 20));
+        memberRepository.save(new Member("홍현", 20));
+
+        int age = 20;
+        int offset = 0;
+        int limit = 5;
+
+        PageRequest pageRequest = PageRequest.of(0, 5, Sort.Direction.DESC, "username");
+
+        Page<Member> members = memberRepository.findByAge(age, pageRequest);
+
+        assertThat(members.getContent().size()).isEqualTo(5);
+        assertThat(members.getTotalElements()).isEqualTo(7);
+        assertThat(members.getNumber()).isEqualTo(0);
+        assertThat(members.getTotalPages()).isEqualTo(2);
+        assertThat(members.isFirst()).isTrue();
+        assertThat(members.hasNext()).isTrue();
+
+        members.stream().map(Member::getUsername).forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("스프링 데이터 JPA를 통한 페이징 처리 테스트(Slice)")
+    public void paging_Slice() {
+
+        memberRepository.save(new Member("강만주", 20));
+        memberRepository.save(new Member("나현수", 20));
+        memberRepository.save(new Member("도경만", 10));
+        memberRepository.save(new Member("라형주", 20));
+        memberRepository.save(new Member("마재석", 10));
+        memberRepository.save(new Member("박한솔", 20));
+        memberRepository.save(new Member("사현재", 20));
+        memberRepository.save(new Member("차인권", 10));
+        memberRepository.save(new Member("탁준희", 20));
+        memberRepository.save(new Member("홍현", 20));
+
+        int age = 20;
+        int offset = 0;
+        int limit = 5;
+
+        PageRequest pageRequest = PageRequest.of(0, 5, Sort.Direction.DESC, "username");
+
+        // Slice : limit + 1, total count X
+//        Slice<Member> members = memberRepository.findByAge(age, pageRequest);
+//
+//        assertThat(members.getContent().size()).isEqualTo(5);
+//        assertThat(members.getNumber()).isEqualTo(0);
+//        assertThat(members.isFirst()).isTrue();
+//        assertThat(members.hasNext()).isTrue();
+//
+//        members.stream().map(Member::getUsername).forEach(System.out::println);
     }
 }
