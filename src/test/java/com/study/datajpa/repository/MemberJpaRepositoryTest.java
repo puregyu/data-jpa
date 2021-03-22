@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest // 스프링 빈을 injection 받아서 쓰기 때문에 스프링 컨테이너가 필요
 @Transactional // jpa의 모든 데이터변경은 트랙잭션안에서 이루어져야 한다. 기본적으로 Test에서는 Rollback 처리된다.
-// @Rollback(false) Test에서 Rollback 처리안함
+@Rollback(false) // Test에서 Rollback 처리안함
 class MemberJpaRepositoryTest {
 
     @Autowired
@@ -108,5 +108,20 @@ class MemberJpaRepositoryTest {
         assertThat(totalCount).isEqualTo(7);
 
         members.stream().map(Member::getUsername).forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("순수 JPA를 통한 bulk 업데이트")
+    public void bulkUpdate() {
+
+        memberJpaRepository.save(new Member("강만주", 20));
+        memberJpaRepository.save(new Member("나현수", 20));
+        memberJpaRepository.save(new Member("도경만", 21));
+        memberJpaRepository.save(new Member("라형주", 23));
+        memberJpaRepository.save(new Member("마재석", 25));
+
+        int resultCount = memberJpaRepository.bulkAgePlus(21);
+
+        assertThat(resultCount).isEqualTo(3);
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +31,8 @@ class MemberRepositoryTest {
     MemberRepository memberRepository;
     @Autowired
     TeamRepository teamRepository;
+    @Autowired
+    EntityManager entityManager; // 같은 transaction 이면 같은 앤티티매니저를 사용
 
     @Test
     void save() {
@@ -145,18 +148,18 @@ class MemberRepositoryTest {
         int offset = 0;
         int limit = 5;
 
-        PageRequest pageRequest = PageRequest.of(0, 5, Sort.Direction.DESC, "username");
-
-        Page<Member> members = memberRepository.findByAge(age, pageRequest);
-
-        assertThat(members.getContent().size()).isEqualTo(5);
-        assertThat(members.getTotalElements()).isEqualTo(7);
-        assertThat(members.getNumber()).isEqualTo(0);
-        assertThat(members.getTotalPages()).isEqualTo(2);
-        assertThat(members.isFirst()).isTrue();
-        assertThat(members.hasNext()).isTrue();
-
-        members.stream().map(Member::getUsername).forEach(System.out::println);
+//        PageRequest pageRequest = PageRequest.of(0, 5, Sort.Direction.DESC, "username");
+//
+//        Page<Member> members = memberRepository.findByAge(age, pageRequest);
+//
+//        assertThat(members.getContent().size()).isEqualTo(5);
+//        assertThat(members.getTotalElements()).isEqualTo(7);
+//        assertThat(members.getNumber()).isEqualTo(0);
+//        assertThat(members.getTotalPages()).isEqualTo(2);
+//        assertThat(members.isFirst()).isTrue();
+//        assertThat(members.hasNext()).isTrue();
+//
+//        members.stream().map(Member::getUsername).forEach(System.out::println);
     }
 
     @Test
@@ -181,13 +184,38 @@ class MemberRepositoryTest {
         PageRequest pageRequest = PageRequest.of(0, 5, Sort.Direction.DESC, "username");
 
         // Slice : limit + 1, total count X
-//        Slice<Member> members = memberRepository.findByAge(age, pageRequest);
-//
-//        assertThat(members.getContent().size()).isEqualTo(5);
-//        assertThat(members.getNumber()).isEqualTo(0);
-//        assertThat(members.isFirst()).isTrue();
-//        assertThat(members.hasNext()).isTrue();
-//
-//        members.stream().map(Member::getUsername).forEach(System.out::println);
+        Slice<Member> members = memberRepository.findByAge(age, pageRequest);
+
+        assertThat(members.getContent().size()).isEqualTo(5);
+        assertThat(members.getNumber()).isEqualTo(0);
+        assertThat(members.isFirst()).isTrue();
+        assertThat(members.hasNext()).isTrue();
+
+        members.stream().map(Member::getUsername).forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("스프링 데이터 JPA를 통한 bulk 업데이트")
+    public void bulkUpdate() {
+
+        memberRepository.save(new Member("강만주", 20));
+        memberRepository.save(new Member("나현수", 20));
+        memberRepository.save(new Member("도경만", 21));
+        memberRepository.save(new Member("라형주", 23));
+        memberRepository.save(new Member("마재석", 25));
+
+        int resultCount = memberRepository.bulkAgePlus(21);
+
+        // *주의사항* : JPA의 영속성 컨텍스트에는 도경만이 21살로 이미 캐싱화되어 남아있고 데이터베이스에만 bulk update되어 있는 상태
+        List<Member> members = memberRepository.findByUsername("도경만");
+        members.stream().map(Member::getAge).forEach(System.out::println);
+
+        entityManager.flush();
+        entityManager.clear(); // @Modifying(clearAutomatically = true) 대체 가능
+
+        List<Member> members2 = memberRepository.findByUsername("도경만");
+        members2.stream().map(Member::getAge).forEach(System.out::println);
+
+        assertThat(resultCount).isEqualTo(3);
     }
 }
