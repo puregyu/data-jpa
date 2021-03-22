@@ -5,6 +5,7 @@ import com.study.datajpa.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.jar.Attributes;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
     // 스프링 데이터 JPA는 메소드 이름을 분석해서 JPQL을 생성하고 실행
@@ -45,13 +47,22 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findOptionalByUsername(String username);
 
     // paging 처리(Page)
-//    Page<Member> findByAge(int age, Pageable pageable);
+    Page<Member> findFromPageByAge(int age, Pageable pageable);
 
     // paging 처리(Slice)
-    Slice<Member> findByAge(int age, Pageable pageable);
+    Slice<Member> findFromSliceByAge(int age, Pageable pageable);
 
     // bulk update
-    @Modifying(clearAutomatically = true)
+//    @Modifying(clearAutomatically = true)
+    @Modifying
     @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
     int bulkAgePlus(@Param("age") int age);
+
+    // fetch join 쿼리 방식 :: member를 조회할 때 연관된 team을 한번에 조회한다.
+    @Query("select m from Member m left join fetch m.team")
+    List<Member> findMemberFetchJoin();
+
+    // fetch join 애노테이션 방식
+    @EntityGraph(attributePaths = ("team"))
+    List<Member> findEntityGraphByUsername(@Param("username") String username);
 }
