@@ -308,4 +308,38 @@ class MemberRepositoryTest {
         // N + 1 문제 해결
     }
 
+    @Test
+    public void queryHint() {
+        // JPA 영속성 컨텍스트에 데이터를 넣어두고
+        Member member = memberRepository.save(new Member("강만주", 20));
+
+        // 영속성 컨텍스트에 있는 데이터가 실제 DB SQL 쿼리가 동작한다.(보통 Transaction commit 할 때, 자동으로 flush가 된다.)
+        entityManager.flush();
+
+        // 영속성 컨텍스트를 비우는 메서드
+        entityManager.clear();
+
+        Optional<Member> byId = memberRepository.findById(member.getId());
+
+        if(byId.isPresent()) {
+            Member findMember = byId.get();
+
+            // 변경감지
+            findMember.setUsername("강민혁");
+
+            // 변경감지가 동작하여 업데이트 쿼리가 동작한다.
+            entityManager.flush();
+
+            entityManager.clear();
+        }
+
+        // @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true")) 애노테이션으로 인하여 변경감지를 위한 스냅샷을 만들어두지 않음
+        Member findUsername = memberRepository.findReadOnlyByUsername("강민혁");
+
+        // 변경감지 X
+        findUsername.setUsername("강민주");
+
+        // 업데이트 쿼리 동작하지 않는다.
+        entityManager.flush();
+    }
 }
