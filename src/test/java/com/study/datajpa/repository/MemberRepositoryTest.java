@@ -309,6 +309,7 @@ class MemberRepositoryTest {
     }
 
     @Test
+    @DisplayName("JPA HINT 사용하여 readOnly 데이터 생성")
     public void queryHint() {
         // JPA 영속성 컨텍스트에 데이터를 넣어두고
         Member member = memberRepository.save(new Member("강만주", 20));
@@ -341,5 +342,14 @@ class MemberRepositoryTest {
 
         // 업데이트 쿼리 동작하지 않는다.
         entityManager.flush();
+    }
+
+    @Test
+    @DisplayName("Custom JPA와 스프링 데이터 JPA 연동")
+    public void callCustom() {
+
+        // 스프링 데이터 JPA 인터페이스가 Custom 인터페이스를 상속하고, Custom 인터페이스를 implements 하여 자유롭게 구현한다.
+        List<Member> result = memberRepository.findMemberCustom();
+
     }
 }
