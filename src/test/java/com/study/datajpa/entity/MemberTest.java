@@ -1,6 +1,9 @@
 package com.study.datajpa.entity;
 
+import com.study.datajpa.repository.MemberRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,6 +23,9 @@ class MemberTest {
 
     @PersistenceContext
     EntityManager entityManager;
+
+    @Autowired
+    MemberRepository memberRepository;
 
     @Test
     public void testEntity() {
@@ -49,5 +56,19 @@ class MemberTest {
             System.out.println("=> member.team = " + member.getTeam());
         }
 
+    }
+
+    @Test
+    @DisplayName("Auditing 테스트")
+    public void auditing_test() {
+        Member member = memberRepository.save(new Member("민규")); //@PrePersist
+
+        Optional<Member> byId = memberRepository.findById(member.getId());
+        if(byId.isPresent()) {
+            System.out.println(byId.get().getCreatedDate());
+            System.out.println(byId.get().getModifiedDate());
+            System.out.println(byId.get().getCreatedBy());
+            System.out.println(byId.get().getModifiedBy());
+        }
     }
 }
