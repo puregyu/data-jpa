@@ -67,4 +67,8 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     // JPA Hint를 줘서 오직 읽기 전용인 Member를 조회(표준 JPA에서 제공하는 기능이 아닌, 구현체 Hibernate를 통해 제공됨)
     @QueryHints(value = @QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Member findReadOnlyByUsername(String username);
+
+    List<UsernameOnly> findProjectionsByUsername(@Param("username") String username);
+
+    <T> List<T> findProjectionsDtoByUsername(@Param("username") String username, Class<T> t);
 }
